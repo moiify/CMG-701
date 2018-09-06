@@ -55,10 +55,15 @@ void emWin_CreateBMPPicture(uint8_t * FileName, int x0, int y0, int xSize, int y
 #define ID_TEXT_ValueType2 (GUI_ID_USER + 0x08)
 #define ID_TEXT_ValueType3 (GUI_ID_USER + 0x09)
 #define ID_TEXT_ValueType4 (GUI_ID_USER + 0x0A)
-#define ID_TEXT_Value1 (GUI_ID_USER + 0x0B)
-#define ID_TEXT_Value2 (GUI_ID_USER + 0x0C)
-#define ID_TEXT_Value3 (GUI_ID_USER + 0x0D)
-#define ID_TEXT_Value4 (GUI_ID_USER + 0x0E)
+#define ID_TEXT_Lengning (GUI_ID_USER + 0x0B)
+#define ID_TEXT_Guolu (GUI_ID_USER + 0x0C)
+#define ID_TEXT_Yali (GUI_ID_USER + 0x0D)
+#define ID_TEXT_Wendu (GUI_ID_USER + 0x0E)
+#define ID_TEXT_Danyang (GUI_ID_USER + 0x15)
+#define ID_TEXT_Eryang (GUI_ID_USER + 0x16)
+#define ID_TEXT_Guoliang (GUI_ID_USER + 0x17)
+#define ID_TEXT_ReXiao (GUI_ID_USER + 0x18)
+#define ID_TEXT_Shuiwei (GUI_ID_USER + 0x19)
 #define ID_TEXT_Date       				(GUI_ID_USER + 0x0F)   //日期地址
 #define ID_TEXT_Time      				(GUI_ID_USER + 0x10)   //时间地址
 #define ID_WINDOW_2 (GUI_ID_USER + 0x11)
@@ -182,6 +187,7 @@ extern int Add_FR_Flag;
 extern int Del_FR_Flag;
 extern u8 Wat_Flag;
 extern Modbus_data ModbusStrtues;
+extern u8 GprsSignalFlag;
 extern u8 GprsSignalStrength;
 GUI_BITMAP buttonbmp_tab[20];  //按键的存储数组
 GUI_BITMAP buttonbmp_Num[12];  //按键的存储数组
@@ -21609,12 +21615,17 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { TEXT_CreateIndirect, "", ID_TEXT_Info, 95, 515, 386, 36, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "", ID_TEXT_ValueType1, 855, 130, 50, 20, 0, 0x0, 0 },   //设备号
   { TEXT_CreateIndirect, "v1.2", ID_TEXT_ValueType2, 543, 565, 50, 20, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "", ID_TEXT_ValueType3, 880, 83, 150, 120, 0, 0x0, 0 },  //Gprs信号强度
+  { TEXT_CreateIndirect, "", ID_TEXT_ValueType3, 880, 85, 150, 120, 0, 0x0, 0 },  //Gprs信号强度
 //  { TEXT_CreateIndirect, "ValueType4", ID_TEXT_ValueType4, 610, 393, 50, 20, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "", ID_TEXT_Value3, 78, 125, 150, 70, 0, 0x0, 0 },   //蒸汽压力
-  { TEXT_CreateIndirect, "", ID_TEXT_Value2, 78, 248, 150, 70, 0, 0x0, 0 },   //锅炉排烟
-  { TEXT_CreateIndirect, "", ID_TEXT_Value1, 78, 371, 150, 70, 0, 0x0, 0 },   //冷凝器排烟	
-  { TEXT_CreateIndirect, "", ID_TEXT_Value4, 577, 120, 150,70, 0, 0x0, 0 },   //水位
+  { TEXT_CreateIndirect, "", ID_TEXT_Yali, 5, 115, 150, 70, 0, 0x0, 0 },   //压力
+  { TEXT_CreateIndirect, "", ID_TEXT_Wendu, 140, 115, 150, 70, 0, 0x0, 0 },   //温度
+	{ TEXT_CreateIndirect, "", ID_TEXT_Guolu, 5, 195, 150, 70, 0, 0x0, 0 },   //锅炉排烟
+  { TEXT_CreateIndirect, "", ID_TEXT_Lengning, 140, 195, 150, 70, 0, 0x0, 0 },   //冷凝器排烟
+  { TEXT_CreateIndirect, "", ID_TEXT_Danyang, 5, 285, 150, 70, 0, 0x0, 0 },   //氮氧化物	
+	{ TEXT_CreateIndirect, "", ID_TEXT_Eryang, 140, 285, 150, 70, 0, 0x0, 0 },   //二氧化硫
+  { TEXT_CreateIndirect, "", ID_TEXT_Guoliang, 5, 375, 150, 70, 0, 0x0, 0 },   //过量空气系数	
+  { TEXT_CreateIndirect, "", ID_TEXT_ReXiao, 140, 375, 150, 70, 0, 0x0, 0 },   //热效率		
+  { TEXT_CreateIndirect, "", ID_TEXT_Shuiwei, 577, 130, 150,70, 0, 0x0, 0 },   //水位
 	{ TEXT_CreateIndirect, " ", ID_TEXT_Date, 820, 40, 110, 20, 0, 0x64, 0 },
   { TEXT_CreateIndirect, " ", ID_TEXT_Time, 930, 40, 120, 20, 0, 0x64, 0 },
 };
@@ -21745,9 +21756,9 @@ static const GUI_WIDGET_CREATE_INFO _aDialogHistory[] = {
 	{ IMAGE_CreateIndirect, "MainImage", ID_IMAGE_0, 0, 0, 1024, 600, 0, 0, 0 },
 	{ GRAPH_CreateIndirect, "Graph", GUI_ID_GRAPH0, 320, 135, 600, 350, 0, 0x0, 0 },
 	{ BUTTON_CreateIndirect, "", ID_BUTTON_Back, 860, 518, 126, 49, 0, 0x0, 0 },	//--------------( 2)
-	{ TEXT_CreateIndirect, "", ID_TEXT_Value3, 35, 196, 150, 70, 0, 0x0, 0 },   //压力
-  { TEXT_CreateIndirect, "", ID_TEXT_Value2, 35, 308, 150, 70, 0, 0x0, 0 },   //锅炉温度
-  { TEXT_CreateIndirect, "", ID_TEXT_Value1, 35, 418, 150, 70, 0, 0x0, 0 },   //冷凝器温度
+	{ TEXT_CreateIndirect, "", ID_TEXT_Yali, 35, 196, 150, 70, 0, 0x0, 0 },   //压力
+  { TEXT_CreateIndirect, "", ID_TEXT_Guolu, 35, 308, 150, 70, 0, 0x0, 0 },   //锅炉温度
+  { TEXT_CreateIndirect, "", ID_TEXT_Lengning, 35, 418, 150, 70, 0, 0x0, 0 },   //冷凝器温度
 																			// USER START (Optionally insert additional widgets)
 																			// USER END
 };
@@ -21920,10 +21931,10 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		sprintf(Text_Info,"欢迎使用");
 	
 	
-	WM_SetCreateFlags(WM_CF_MEMDEV);
-	hMemBMP=_ShowBMP((const TCHAR*)BmpFileName,0,0);
-//	for(m=0;m<60;m++)
-	GUI_MEMDEV_WriteAt( hMemBMP,0,0);
+//	WM_SetCreateFlags(WM_CF_MEMDEV);
+//	hMemBMP=_ShowBMP((const TCHAR*)BmpFileName,0,0);
+////	for(m=0;m<60;m++)
+//	GUI_MEMDEV_WriteAt( hMemBMP,0,0);
 	
 	
 		hItem = pMsg->hWin;
@@ -21977,14 +21988,38 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 //    TEXT_SetFont(hItem, GUI_FONT_COMIC24B_1);
 //	
 
-//		hItem = WM_GetDialogItem(pMsg->hWin, ID_IMAGE_0);
-//		f_open(&BMPFile,(const TCHAR*)BmpFileName,FA_READ);
-//		Bmpbuffer=mymalloc(SRAMEX,BMPFile.obj.objsize);	
-//		f_read(&BMPFile,Bmpbuffer,BMPFile.obj.objsize,(UINT *)&bread); 
-//		IMAGE_SetBMP(hItem,Bmpbuffer, BMPFile.obj.objsize);
-//		f_close(&BMPFile);			
-//  	myfree(SRAMEX,Bmpbuffer);
-
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_IMAGE_0);
+		f_open(&BMPFile,(const TCHAR*)BmpFileName,FA_READ);
+		Bmpbuffer=mymalloc(SRAMEX,BMPFile.obj.objsize);	
+		f_read(&BMPFile,Bmpbuffer,BMPFile.obj.objsize,(UINT *)&bread); 
+		IMAGE_SetBMP(hItem,Bmpbuffer, BMPFile.obj.objsize);
+		f_close(&BMPFile);			
+  	myfree(SRAMEX,Bmpbuffer);
+    
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Wendu);   //温度
+		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTGREEN));
+		TEXT_SetFont(hItem,GUI_FONT_32_1);
+		TEXT_SetText(hItem,"-.--");
+		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
+		
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Danyang);   //氮氧化物
+		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTYELLOW));
+		TEXT_SetFont(hItem,GUI_FONT_32_1);
+		TEXT_SetText(hItem,"-.--");
+		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
+		
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Eryang);   //二氧化硫
+		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTYELLOW));
+		TEXT_SetFont(hItem,GUI_FONT_32_1);
+		TEXT_SetText(hItem,"-.--");
+		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
+		
+	
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_ReXiao);   //热效率
+		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTMAGENTA));
+		TEXT_SetFont(hItem,GUI_FONT_32_1);
+		TEXT_SetText(hItem,"-.--");
+		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
 
 //		OSSchedLock();  
 
@@ -21995,36 +22030,42 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 	case WM_TIMER:
 		WM_RestartTimer(pMsg->Data.v,500);//刷新定时器
 //	  printf("Data[2]:%d \r\n",Data[2]);
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Value1);   //冷凝器排烟
-		sprintf(PrintTemp,"%.2f", ModbusStrtues.LengSmoke_C);
-		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTYELLOW ));
-		TEXT_SetFont(hItem,GUI_FONT_D24X32);
-		TEXT_SetText(hItem, PrintTemp);
-		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
-	  
-	
-	  hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Value2);   //锅炉排烟
-	  sprintf(PrintTemp,"%.2f", ModbusStrtues.MachineSmoke_C);
-	  TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTCYAN ));
-    TEXT_SetFont(hItem, GUI_FONT_D24X32);
-		TEXT_SetText(hItem, PrintTemp);
-		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
-
-	  
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Value3);   //蒸汽压力
+  
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Yali);   //蒸汽压力
 		sprintf(PrintTemp,"%.2f",ModbusStrtues.Steam_Mpa);
 		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTGREEN ));
-		TEXT_SetFont(hItem,GUI_FONT_D24X32);
+		TEXT_SetFont(hItem,GUI_FONT_32_1);
 		TEXT_SetText(hItem, PrintTemp);
 		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
 	
-	  hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Value4);    //水位
+	
+	  hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Guolu);   //锅炉排烟
+	  sprintf(PrintTemp,"%.2f", ModbusStrtues.MachineSmoke_C);
+	  TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTCYAN ));
+    TEXT_SetFont(hItem, GUI_FONT_32_1);
+		TEXT_SetText(hItem, PrintTemp);
+		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
+	
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Lengning);   //冷凝器排烟
+		sprintf(PrintTemp,"%.2f", ModbusStrtues.LengSmoke_C);
+		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTCYAN ));
+		TEXT_SetFont(hItem,GUI_FONT_32_1);
+		TEXT_SetText(hItem, PrintTemp);
+		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
+	
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Guoliang);   //过量空气系数
+		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTMAGENTA));
+		sprintf(PrintTemp,"%.2f", ModbusStrtues.Oxygen_Null);
+		TEXT_SetFont(hItem,GUI_FONT_32_1);
+		TEXT_SetText(hItem,PrintTemp);
+		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
+		
+	  hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Shuiwei);    //水位
 	  sprintf(PrintTemp,"%d",ModbusStrtues.Water_Null);
-    TEXT_SetFont(hItem, GUI_FONT_D24X32);
+    TEXT_SetFont(hItem, GUI_FONT_32_1);
 		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_ORANGE));
 		TEXT_SetText(hItem, PrintTemp);
 		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
-		
 		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Info);
 		sprintf(PrintTemp,"%s", Text_Info);
@@ -22033,17 +22074,19 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetText(hItem, PrintTemp);
 		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_ValueType3);
-		if((GprsSignalStrength<=5)||GprsSignalStrength==99)
-		sprintf(GprsTemp,"GPRS无信号:%d",GprsSignalStrength);
-		else if(GprsSignalStrength>5&&GprsSignalStrength<=14)
-			sprintf(GprsTemp,"GPRS信号弱:%d",GprsSignalStrength);
-		else if(GprsSignalStrength<=26&&GprsSignalStrength>14)
-			sprintf(GprsTemp,"GPRS信号正常:%d",GprsSignalStrength);
-		else if(GprsSignalStrength<=31&&GprsSignalStrength>26)
-			sprintf(GprsTemp,"GPRS信号强:%d",GprsSignalStrength);
-		else if(GprsSignalStrength==88)
-		sprintf(GprsTemp,"正在搜索GPRS信号");
-		TEXT_SetText(hItem, GprsTemp);
+			sprintf(GprsTemp,"GPRS:%d",GprsSignalStrength);
+		if(GprsSignalFlag==1)
+			sprintf(GprsTemp,"LinkOK:%d",GprsSignalStrength);
+//		if((GprsSignalStrength<=5)||GprsSignalStrength==99)
+//			sprintf(GprsTemp,"GPRS无信号:%d",GprsSignalStrength);
+//		else if(GprsSignalStrength>5&&GprsSignalStrength<=14)
+//			sprintf(GprsTemp,"GPRS信号弱:%d",GprsSignalStrength);
+//		else if(GprsSignalStrength<=26&&GprsSignalStrength>14)
+//			sprintf(GprsTemp,"GPRS信号正常:%d",GprsSignalStrength);
+//		else if(GprsSignalStrength<=31&&GprsSignalStrength>26)
+//			sprintf(GprsTemp,"GPRS信号强:%d",GprsSignalStrength);//
+//  sprintf(GprsTemp,"%d",GprsSignalStrength);
+		TEXT_SetText(hItem,GprsTemp);
 		TEXT_SetFont(hItem, &GUI_FontHZ16);
 		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTGRAY ));
 		
@@ -22150,38 +22193,39 @@ static void _cbDialogFuction(WM_MESSAGE * pMsg) {
     //
     // Initialization of 'Image'
 			//
-//		IWDG_Feed();
-//    hItem = WM_GetDialogItem(pMsg->hWin, ID_IMAGE_1);
-//		f_open(&BMPFile,(const TCHAR*)BmpFileFun,FA_READ);
-//		Bmpbuffer=mymalloc(SRAMEX,BMPFile.obj.objsize);	
-//		f_read(&BMPFile,Bmpbuffer,BMPFile.obj.objsize,(UINT *)&bread); 
-//		IMAGE_SetBMP(hItem,Bmpbuffer, BMPFile.obj.objsize);
-//		f_close(&BMPFile);			
-//  	myfree(SRAMEX,Bmpbuffer);
-//	   //
-//    // Initialization of 'Button'
-//    //
-//    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_Finger);
-//	  BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[11],0,0);
-//    //
-//    // Initialization of 'Button'
-//    //
-//    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_History);
-//		BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[12],0,0);
-//    //
-//    // Initialization of 'Button'
-//    //
-//    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_Settings);
-//    BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[13],0,0);
-//	
-//	  hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_Back);
-////    BUTTON_SetFont(hItem, GUI_FONT_16B_ASCII);
-////    BUTTON_SetText(hItem, "Back");
-//		BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[10],0,0);
-			WM_SetCreateFlags(WM_CF_MEMDEV);
-	hMemBMP=_ShowBMP((const TCHAR*)BmpFileName,0,0);
-//	for(m=0;m<60;m++)
-	GUI_MEMDEV_WriteAt( hMemBMP,0,0);
+		IWDG_Feed();
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_IMAGE_1);
+		f_open(&BMPFile,(const TCHAR*)BmpFileFun,FA_READ);
+		Bmpbuffer=mymalloc(SRAMEX,BMPFile.obj.objsize);	
+		f_read(&BMPFile,Bmpbuffer,BMPFile.obj.objsize,(UINT *)&bread); 
+		IMAGE_SetBMP(hItem,Bmpbuffer, BMPFile.obj.objsize);
+		f_close(&BMPFile);			
+  	myfree(SRAMEX,Bmpbuffer);
+
+    // Initialization of 'Button'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_Finger);
+	  BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[11],0,0);
+    //
+    // Initialization of 'Button'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_History);
+		BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[12],0,0);
+    //
+    // Initialization of 'Button'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_Settings);
+    BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[13],0,0);
+	
+	  hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_Back);
+//    BUTTON_SetFont(hItem, GUI_FONT_16B_ASCII);
+//    BUTTON_SetText(hItem, "Back");
+		BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[10],0,0);
+		
+//			WM_SetCreateFlags(WM_CF_MEMDEV);
+//		hMemBMP=_ShowBMP((const TCHAR*)BmpFileName,0,0);
+////	for(m=0;m<60;m++)
+//	GUI_MEMDEV_WriteAt( hMemBMP,0,0);
     break;
 		
   case WM_NOTIFY_PARENT:
@@ -22852,7 +22896,7 @@ case WM_TIMER:
 //	  Value_Data[count]=Salve_Data[count];
 //	}
 
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Value1);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Lengning);
 		sprintf(PrintTemp,"%.2f",ModbusStrtues.LengSmoke_C);
 		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTRED ));
 		TEXT_SetFont(hItem,GUI_FONT_COMIC24B_1);
@@ -22860,14 +22904,14 @@ case WM_TIMER:
     TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
 	  
 	
-	  hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Value2);
+	  hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Guolu);
 	  sprintf(PrintTemp,"%.2f", ModbusStrtues.MachineSmoke_C);
 	  TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTYELLOW ));
     TEXT_SetFont(hItem, GUI_FONT_COMIC24B_1);
 		TEXT_SetText(hItem, PrintTemp);
     TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
 	  
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Value3);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Yali);
 		sprintf(PrintTemp,"%.2f", ModbusStrtues.Steam_Mpa);
 		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_CYAN));
 		TEXT_SetFont(hItem,GUI_FONT_COMIC24B_1);
@@ -22975,7 +23019,7 @@ WM_HWIN CreateWindow(void)
 	ButtonBTM();
 	
 	WM_SetCreateFlags(WM_CF_MEMDEV);
-	hMemBMP=_ShowBMP((const TCHAR*)BmpFileName,0,0);
+	hMemBMP=_ShowBMP((const TCHAR*)Welcome,0,0);
 	for(m=0;m<30;m++)
 	GUI_MEMDEV_WriteAt( hMemBMP,0,0);
 	

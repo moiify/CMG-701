@@ -80,6 +80,15 @@ extern u8 MESH_R_COUNT;
 extern OS_TMR 	tmr1;		//定时器1
 extern OS_TMR 	MESH_tmr;		//MESH定时器
 extern u8 GPRS_DATA[100];
+
+RS_Cache RS485_Cache = 
+{
+    .Size = 20,
+    .In = 0,
+    .Out = 0,
+    .Count = 0, 
+};
+
 /*
 ****************************************************************************
 *	函 数 名: WIFI_USART6_init
@@ -98,6 +107,7 @@ extern u8 GPRS_DATA[100];
 	husart6.Init.HwFlowCtl=UART_HWCONTROL_NONE;   //无硬件流控
 	husart6.Init.Mode=UART_MODE_TX_RX;		        //收发模式
 	HAL_UART_Init(&husart6);					    				//HAL_UART_Init()会使能USART6
+	HAL_UART_Receive_IT(&husart6, (u8 *)Modbus_res, 1);
 }
 
 /*
@@ -264,9 +274,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 		__HAL_UART_ENABLE_IT(huart,UART_IT_RXNE);//开启接收中断
 		HAL_NVIC_EnableIRQ(USART6_IRQn);				//使能USART6中断通道
 		HAL_NVIC_SetPriority(USART6_IRQn,2,3);	//抢占优先级2，子优先级3
-		TIM7_Int_Init(1000-1,9000-1);						//100ms中断
-		USART6_RX_STA=0;												//清零
+		TIM7_Int_Init(50-1,10800-1);						//8ms中断
 		TIM7->CR1&=~(1<<0);      							  //关闭定时器7
+		//HAL_UART_Receive_IT(&husart6, (u8 *)Modbus_res, 1) != HAL_OK);
 	}
 }
 
@@ -333,22 +343,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}	
 	if(huart->Instance==USART6)//接收到数据
 	{
-		if((USART6_RX_STA&(1<<15))==0)//接收完的一批数据,还没有被处理,则不再接收其他数据
-		{ 
-			if(USART6_RX_STA<USART6_MAX_RECV_LEN)	//还可以接收数据
-			{
-				TIM7->CNT=0;         				//计数器清空	
-				if(USART6_RX_STA==0) 				//使能定时器7的中断 
-				{
-					TIM7->CR1|=1<<0;     			//使能定时器7					
-				}
-				USART6_RX_BUF[USART6_RX_STA++] = Modbus_res[0];;	//记录接收到的值	 
-			}
-			else 
-			{
-				USART6_RX_STA|=1<<15;				//强制标记接收完成
-			} 
-		}
+	
+			TIM7->CNT=0;         				//计数器清空	
+
+			TIM7->CR1|=1<<0;     			//使能定时器7					
+
+			USART6_RX_BUF[USART6_RX_STA++] = Modbus_res[0];;	//记录接收到的值	 
+      
+			HAL_UART_Receive_IT(&husart6, (u8 *)Modbus_res, 1);
 	}  	
 }
 
@@ -475,8 +477,6 @@ void USART6_IRQHandler(void)
 //	}  
 	OSIntEnter(); 
 	HAL_UART_IRQHandler(&husart6);	//调用HAL库中断处理公用函数
-	while (HAL_UART_GetState(&husart6) != HAL_UART_STATE_READY){;}//等待就绪
-	while(HAL_UART_Receive_IT(&husart6, (u8 *)Modbus_res, 1) != HAL_OK){;}	
 	OSIntExit();	
 } 	
 /*
@@ -581,10 +581,27 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
 */	    
 void TIM7_IRQHandler(void)
 { 	
-		USART6_RX_STA |= 1<<15;	//标记接收完成
-		__HAL_TIM_CLEAR_FLAG(&TIM7_Handler,TIM_EventSource_Update );       //清除TIM7更新中断标志  
-		TIM7->CR1&=~(1<<0);     			//关闭定时器7   		
-  			
+	static u8 CopyPoint;
+	 
+	__HAL_TIM_CLEAR_FLAG(&TIM7_Handler,TIM_EventSource_Update );       //清除TIM7更新中断标志  
+	TIM7->CR1&=~(1<<0);     			//关闭定时器7
+	if(USART6_RX_STA>0)
+	{
+        if(RS485_Cache.Count < RS485_Cache.Size)
+        {
+            ModbusRevBuf_t *p;
+            if(USART6_RX_STA>100)
+            USART6_RX_STA=100;
+            p = &RS485_Cache.Buf[RS485_Cache.In];
+             p->Len = USART6_RX_STA;
+            USART6_RX_STA=0;	
+            memcpy(p->Buf,USART6_RX_BUF,p->Len);
+            memset(USART6_RX_BUF,0,sizeof(USART6_RX_BUF));
+            RS485_Cache.In++;
+            RS485_Cache.In %= sizeof(RS485_Cache.Buf)/sizeof(RS485_Cache.Buf[0]);
+            RS485_Cache.Count++;
+        }
+    }		 
 } 
 void TIM5_IRQHandler(void)
 { 	

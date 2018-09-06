@@ -21,10 +21,12 @@ char end1[1]={0x1A};					  //发送结尾标志
 u8 count=0;										  //任务计次
 u8 Flag_GPRS_R=0;
 u8 Flag_CONNECTSERVER;
-u8 GprsSignalStrength=88;
+u8 GprsSignalStrength=0;
+u8 GprsSignalFlag=0;
 FIL * FilPtr, FileSystemDst;
 u8 GPRS_DATA[100];
 u8 Clock[40];
+u8 GPRSSEND[50];
 extern Modbus_data ModbusStrtues;
 
 void GPRS_EN_Init(void)
@@ -72,19 +74,21 @@ AT:		do
 					printf("AT: %s \r\n",GPRS_DATA);					
 					count=0;
 					Flag_GPRS_R=0;
+					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
 					OSTimeDlyHMSM(0,0,1,0,OS_OPT_TIME_PERIODIC,&err);
-				  memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+				  
 			}
 			else
 			{
 				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+				goto AT;
 				//OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
  			}			
 		}while(Flag_GPRS_R);
 
 		
 /*                查询信号质量             */
-		do
+CSQ:		do
 			{
 			printf("AT+CSQ\r\n");
 			memset(GPRS_DATA,0,sizeof(GPRS_DATA));
@@ -108,11 +112,11 @@ AT:		do
 			if(strstr((const char *)GPRS_DATA,"OK")!=NULL)
 			{ 		
 			      printf("AT+CSQ : %s\r\n",GPRS_DATA);
-		        GprsSignalStrength=(GPRS_DATA[8]-48)*10+(GPRS_DATA[9]-48);
-						OSTimeDlyHMSM(0,0,1,0,OS_OPT_TIME_PERIODIC,&err);				
+		        GprsSignalStrength=(GPRS_DATA[8]-48)*10+(GPRS_DATA[9]-48);	
 						count =0;		
 						Flag_GPRS_R=0;
 						memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+						OSTimeDlyHMSM(0,0,5,0,OS_OPT_TIME_PERIODIC,&err);
 			}
 			else
 			{ 
@@ -122,43 +126,43 @@ AT:		do
 			}
 			}while(Flag_GPRS_R);
 
-/*                网络注册信息             */
-			do
-		{ 
-			printf("AT+CPIN?\r\n");
-			GPRS_Sendcom((u8 *)"AT+CPIN?\r\n"); 
-			OSTimeDlyHMSM(0,0,1,0,OS_OPT_TIME_PERIODIC,&err);		
-			while(Flag_GPRS_R==0)
-			{
-				count++;
-				OSTimeDlyHMSM(0,0,0,400,OS_OPT_TIME_PERIODIC,&err);	
-				if(count%5==0)
-				{
-					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-					GPRS_Sendcom((u8 *)"AT+CPIN?\r\n");
-				}
-				if(count>25)
-				{
-					count =0;
-					goto AT;
-				}
-			}
-			
-			if(strstr((const char *)GPRS_DATA,"READY")!=NULL)
-			{   
-				  printf("AT+CPIN?: %s\r\n",GPRS_DATA);	
-					Flag_GPRS_R=0;
-					count =0;				
-					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-					
-			}
-			else
-			{
-				Flag_GPRS_R=0;
-				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-				OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
-			}
-		}while(Flag_GPRS_R);
+///*                网络注册信息             */
+//			do
+//		{ 
+//			printf("AT+CPIN?\r\n");
+//			GPRS_Sendcom((u8 *)"AT+CPIN?\r\n"); 
+//			OSTimeDlyHMSM(0,0,1,0,OS_OPT_TIME_PERIODIC,&err);		
+//			while(Flag_GPRS_R==0)
+//			{
+//				count++;
+//				OSTimeDlyHMSM(0,0,0,400,OS_OPT_TIME_PERIODIC,&err);	
+//				if(count%5==0)
+//				{
+//					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+//					GPRS_Sendcom((u8 *)"AT+CPIN?\r\n");
+//				}
+//				if(count>25)
+//				{
+//					count =0;
+//					goto AT;
+//				}
+//			}
+//			
+//			if(strstr((const char *)GPRS_DATA,"READY")!=NULL)
+//			{   
+//				  printf("AT+CPIN?: %s\r\n",GPRS_DATA);	
+//					Flag_GPRS_R=0;
+//					count =0;				
+//					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+//					
+//			}
+//			else
+//			{
+//				Flag_GPRS_R=0;
+//				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+//				OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
+//			}
+//		}while(Flag_GPRS_R);
 
 /*                附着GPRS业务             */
 	do
@@ -195,6 +199,7 @@ AT:		do
 			{
 				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
 				OSTimeDlyHMSM(0,0,2,0,OS_OPT_TIME_PERIODIC,&err);
+				goto CSQ;
 			}
 		}while(Flag_GPRS_R);
 
@@ -299,14 +304,16 @@ AT:		do
 /*                建立连接             */
 		do
 		{ 
-			printf("Server_ip %s\r\n",Server_ip);
-			GPRS_Sendcom((u8 *)"AT+CIPSTART=\"TCP\",\"");
+			printf("Server_ip %s\r\n",Server_ip);	
 			AT24CXX_Read(232,Server_ip,16);
-			//printf("Server_ip %s\r\n",Server_ip);
+			OSTimeDlyHMSM(0,0,0,200,OS_OPT_TIME_PERIODIC,&err);
+			OSIntEnter();
+			GPRS_Sendcom((u8 *)"AT+CIPSTART=\"TCP\",\"");
 			GPRS_Sendcom(Server_ip);
 			GPRS_Sendcom((u8 *)"\",\"");
 			GPRS_Sendcom(server_port);
 			GPRS_Sendcom((u8 *)"\"\r\n");
+			OSIntExit(); 
 			OSTimeDlyHMSM(0,0,3,0,OS_OPT_TIME_PERIODIC,&err);
 			while(Flag_GPRS_R==0)
 			{
@@ -336,7 +343,7 @@ AT:		do
 				printf("CONNECTSERVER : %s\r\n",GPRS_DATA);
 				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
 				OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
-				goto AT;
+				goto CSQ;
 			}
 		}while(Flag_GPRS_R);
 		
@@ -388,6 +395,7 @@ void GPRS_Task(void)
 		OSTimeDlyHMSM(0,0,2,0,OS_OPT_TIME_PERIODIC,&err);
 		sprintf((char*)Clock,"%s",GPRS_DATA);			
 		}
+		GprsSignalFlag=1;
 		printf("Clock2:%s\r\n",Clock);
 		memset(GPRS_DATA,0,sizeof(GPRS_DATA));
 	  RTC_DateStruct.Year = ((Clock[18]-48)*10 + (Clock[19]-48));
@@ -438,16 +446,18 @@ void GPRS_Task(void)
 //						sprintf(&sendsbuf[0],"Data:%02d:%02d:%02d",RTC_TimeStruct.Hours,RTC_TimeStruct.Minutes,RTC_TimeStruct.Seconds); 
 //						sprintf(sendsbuf+13,"20%02d-%02d-%02d",RTC_DateStruct.Year,RTC_DateStruct.Month,RTC_DateStruct.Date);						
 //						sprintf(sendsbuf+23,":%send", EquipID);
-						sprintf(sendsbuf,"{\"ZQYL\":%.2f,\"GLPY\":%.2f,\"LNQPY\":%.2f,\"SW\":%d,\"QT\":%d,\"RSJ\":%d,\"RSYL\":%d,\"RSWD\":%d,\"ZQWD\":%d,\"EQUIP\":\"%s\",\"Clock\":1,\"Type\":0}\r\n",
+						sprintf(sendsbuf,"{\"YL\":%.2f,\"WD\":%f,\"SW\":%d,\"GLPY\":%.2f,\"LNQPY\":%.2f,\"GLQD\":%d,\"RSJQD\":%d,\"DYHW\":%d,\"EYHL\":%d,\"KQXS\":%f,\"RXL\":%f,\"EQUIP\":\"%s\",\"Clock\":1,\"Type\":0}\r\n",
 																																													ModbusStrtues.Steam_Mpa,
+																																													ModbusStrtues.Temp_C,
+																																													ModbusStrtues.Water_Null,
 																																													ModbusStrtues.MachineSmoke_C,
 																																													ModbusStrtues.LengSmoke_C,
-																																													ModbusStrtues.Water_Null,
 																																													ModbusStrtues.Machine_Status,
 																																												  ModbusStrtues.Burn_Status,
-																																													ModbusStrtues.WarmWater_Mpa,
-																																												  ModbusStrtues.WarmWater_C,                                               
-																																												  ModbusStrtues.Steam_C,
+																																												  ModbusStrtues.Danyang_ppm,                                               
+																																												  ModbusStrtues.Eryang_ppm,
+																																													ModbusStrtues.Oxygen_Null,                                               
+																																												  ModbusStrtues.Rexiao,
 																																													EquipID			);
 						printf("GPRS:%s\r\n",sendsbuf);		
 						GPRS_Sendcom((u8 *)"AT+CIPSEND\r\n");
@@ -506,13 +516,13 @@ void GPRS_Task(void)
 					else
 					{
 						printf("Don't know the error! \r\n");
-							USART3->CR1|=1<<2;
-							USART3->CR1|=1<<5;
-							USART6->CR1|=1<<2;
-							USART6->CR1|=1<<5;
 					}
+                    USART3->CR1|=1<<2;
+                    USART3->CR1|=1<<5;
+                    USART6->CR1|=1<<2;  
+					USART6->CR1|=1<<5;
 					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-		      GPRS_Sendcom((u8 *)"AT+CSQ\r\n");				
+                    GPRS_Sendcom((u8 *)"AT+CSQ\r\n");				
 					OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
 					GprsSignalStrength=(GPRS_DATA[8]-48)*10+(GPRS_DATA[9]-48);
 					memset(GPRS_DATA,0,sizeof(GPRS_DATA));

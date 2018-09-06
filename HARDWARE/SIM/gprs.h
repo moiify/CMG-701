@@ -12,6 +12,7 @@ extern u8 server_port[6];
 extern u8 EquipID[5];
 extern u8  Password[5];
 extern u8 GprsSignalStrength;
+extern u8 GprsSignalFlag;
 
 
 void GPRS_EN_Init(void);

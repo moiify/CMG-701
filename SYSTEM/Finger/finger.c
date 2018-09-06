@@ -68,7 +68,7 @@ int FingerPrint_Task(void)    //指纹识别任务
 	int m;
 	OSTaskSemPend(0,OS_OPT_PEND_BLOCKING,0,&err);		 	//请求内建的信号量
 	PS_StaGPIO_Init();
-	
+	IWDG_Feed();
 	while(PS_HandShake(&AS608Addr))//检测AS608
 	{
 		OSTimeDlyHMSM(0,0,0,400,OS_OPT_TIME_PERIODIC,&err);
@@ -104,7 +104,7 @@ int FingerPrint_Task(void)    //指纹识别任务
 	while(1)
 	{ 
     sprintf(Text_Info,"欢迎使用");
-		
+	IWDG_Feed();                
 		if(Del_FR_Flag)
 			Del_FR();		//删指纹
 				

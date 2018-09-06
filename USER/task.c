@@ -442,7 +442,8 @@ void ModBus_Task(void *p_arg)
 	OS_ERR err;
 	WIFI_USART6_init(9600);
 	while(1)
-	{
+	{   
+       
 		Host485_Task();
 		OSTimeDlyHMSM(0,0,0,100,OS_OPT_TIME_PERIODIC,&err);//延时100ms
 	}
@@ -590,8 +591,8 @@ void Systemcheckstack_task(void *p_arg)
 //	u8 paddr[20];
 	OS_ERR err;
 //	CPU_STK_SIZE free,used;
-//	(void) p_arg;
-//IWDG_Init(4, 10000);
+	(void) p_arg;
+  IWDG_Init(4, 30000);
 	
 	while(1)
 {

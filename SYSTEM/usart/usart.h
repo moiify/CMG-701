@@ -19,6 +19,23 @@
 *	                              	     È«¾Ö±äÁ¿
 ************************************************************************************
 */
+
+typedef struct
+{
+	uint8_t Buf[100];
+	uint8_t Len;
+}ModbusRevBuf_t;
+
+typedef struct 
+{ 
+  ModbusRevBuf_t Buf[20];
+  u8 In;	
+  u8 Out;
+  u8 Count;
+  uint8_t Size;  
+}RS_Cache;
+
+
 extern u8  USART_RX_BUF[USART_REC_LEN]; //½ÓÊÕ»º³å,×î´óUSART_REC_LEN¸ö×Ö½Ú.Ä©×Ö½ÚÎª»»ÐÐ·û
 extern u8 USART6_RX_BUF[USART6_MAX_RECV_LEN];
 extern u16 USART_RX_STA;         		//½ÓÊÕ×´Ì¬±ê¼Ç	
@@ -32,6 +49,7 @@ extern u16 USART3_RX_STA;   				 //½ÓÊÕÊý¾Ý×´Ì¬
 
 extern u8 aRxBuffer[RXBUFFERSIZE];//HAL¿âUSART½ÓÊÕBuffer
 
+extern RS_Cache RS485_Cache;
 
 
 
