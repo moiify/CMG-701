@@ -366,7 +366,7 @@ void GPRS_Task(void)
 		char Date[10];
 		char Clock_Flag[3];
 		char clockcheck[]="{\"ZQYL\":-1,\"GLPY\":-1,\"LNQPY\":-1,\"SW\":-1,\"QT\":-1,\"RSJ\":-1,\"RSYL\":-1,\"RSWD\":-1,\"ZQWD\":-1,\"EQUIP\":\"-1\",\"Clock\":0,\"Type\":0}\r\n";
-		
+		static u8 His_Date;
     //OSTaskSemPend(0,OS_OPT_PEND_BLOCKING,0,&err);		 	//请求内建的信号量
 	
 		//GPRS_EN_Init();
@@ -398,7 +398,7 @@ void GPRS_Task(void)
 		GprsSignalFlag=1;
 		printf("Clock2:%s\r\n",Clock);
 		memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-	  RTC_DateStruct.Year = ((Clock[18]-48)*10 + (Clock[19]-48));
+        RTC_DateStruct.Year = ((Clock[18]-48)*10 + (Clock[19]-48));
 		RTC_DateStruct.Month = ((Clock[20]-48)*10 + (Clock[21]-48));
 		RTC_DateStruct.Date = ((Clock[22]-48)*10 + (Clock[23]-48));
 		RTC_Set_Date(RTC_DateStruct.Year, RTC_DateStruct.Month, RTC_DateStruct.Date, 4);		
@@ -406,6 +406,7 @@ void GPRS_Task(void)
 		RTC_TimeStruct.Minutes = ((Clock[26]-48)*10 + (Clock[27]-48));
 		RTC_TimeStruct.Seconds = ((Clock[28]-48)*10 + (Clock[29]-48));
 		HAL_RTC_SetTime(&RTC_Handler,&RTC_TimeStruct,RTC_FORMAT_BIN);
+        His_Date=RTC_DateStruct.Date;
 	  while(1)
 		{
 			GPRS_Sendcom((u8 *)"AT+CIPSTART=\"TCP\",\"");
@@ -526,6 +527,13 @@ void GPRS_Task(void)
 					OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
 					GprsSignalStrength=(GPRS_DATA[8]-48)*10+(GPRS_DATA[9]-48);
 					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-					OSTimeDlyHMSM(0,1,0,0,OS_OPT_TIME_PERIODIC,&err);
+                    u8 Now_Date;
+                    HAL_RTC_GetDate(&RTC_Handler,&RTC_DateStruct,RTC_FORMAT_BIN);
+                    Now_Date=RTC_DateStruct.Date;
+                    if((Now_Date-His_Date)>=1)
+                    {
+                        SCB->AIRCR =0X05FA0000|(u32)0x04;  //系统软复位
+                    }
+                    OSTimeDlyHMSM(0,1,0,0,OS_OPT_TIME_PERIODIC,&err);
 	}
 }
