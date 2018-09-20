@@ -113,3 +113,4 @@
 ..\obj\gprs.o: ..\SYSTEM\modbus\Host485.h
 ..\obj\gprs.o: ..\HARDWARE\24CXX\24cxx.h
 ..\obj\gprs.o: ..\HARDWARE\IIC\myiic.h
+..\obj\gprs.o: ..\HARDWARE\IWDG\iwdg.h

@@ -682,44 +682,49 @@ void Finger_Task(void *p_arg)
 ******************************************************************************
 */
 void Sys_Init(void)
-{   
-	  OS_ERR err;
-	  u8 Font_Init[1]={0x00}; 
-		u8 Font_Init_Finish_Flag[1]=".";
-		Write_Through();                //Cahce强制透写
+{
+    
+	OS_ERR err;
+	u8 Font_Init[1]={0x00}; 
+    u8 Font_Init_Finish_Flag[1]=".";
+	Write_Through();                //Cahce强制透写
     MPU_Memory_Protection();        //保护相关存储区域
     Cache_Enable();                 //打开L1-Cache
    	Stm32_Clock_Init(432,25,2,9);   //设置时钟,216Mhz 
-		HAL_Init();				       			  //初始化HAL库
+	HAL_Init();				       			  //初始化HAL库
     delay_init(216);                //延时初始化
-		uart_init(115200);		        	//串口初始化
-		GPRS_UART2_init(115200);				//GPRS串口2初始化
-		WIFI_USART6_init(9600);  		  //初始化串口7波特率为115200
-		MESH_UART3_init(57600);
+	uart_init(115200);		        	//串口初始化
+	GPRS_UART2_init(115200);				//GPRS串口2初始化
+	WIFI_USART6_init(9600);  		  //初始化串口7波特率为115200
+	MESH_UART3_init(57600);
     LED_Init();                     //初始化LED
-		KEY_Init();											//初始化KEY
+	KEY_Init();											//初始化KEY
     SDRAM_Init();                   //SDRAM初始化
-		TFTLCD_Init();                  //初始化LCD
+	TFTLCD_Init();                  //初始化LCD
     TP_Init();				              //触摸屏初始化
-		RTC_Init();                     //初始化RTC 
-		AT24CXX_Init();
+	RTC_Init();                     //初始化RTC 
+	AT24CXX_Init();
 //	  MYDMA_Config(DMA2_Stream2,DMA_CHANNEL_5);//初始化DMA
     my_mem_init(SRAMIN);		        //初始化内部内存池
-		my_mem_init(SRAMEX);		        //初始化外部内存池
-		my_mem_init(SRAMDTCM);		      //初始化DTCM内存池
-		exfuns_init();			            //为fatfs相关变量申请内存				 
+	my_mem_init(SRAMEX);		        //初始化外部内存池
+	my_mem_init(SRAMDTCM);		      //初始化DTCM内存池
+	exfuns_init();			            //为fatfs相关变量申请内存				 
   	f_mount(fs[0],"0:",1); 		      //挂载SD卡
-		f_mount(fs[1],"1:",1); 	        //挂载FLASH.	
-		AT24CXX_Read(253,Font_Init,1);
-		if(font_init()||strcmp((char*)Font_Init,"."))		//初始化字库
+	f_mount(fs[1],"1:",1); 	        //挂载FLASH.	
+	AT24CXX_Read(253,Font_Init,1);
+	if(font_init()||strcmp((char*)Font_Init,"."))		//初始化字库
 //  	if(font_init())		//初始化字库
-		{
-		AT24CXX_Write(253,Font_Init_Finish_Flag,1);
-		printf("Font Error \r\n");
-		SD_Init();
-	  update_font(30,90,16,"0:");	//如果字库不存在就更新字库
-		OSTimeDlyHMSM(0,0,2,0,OS_OPT_TIME_PERIODIC,&err);//延时5ms
-    }else printf("Font OK");
+    {
+        AT24CXX_Write(253,Font_Init_Finish_Flag,1);
+        printf("Font Error \r\n");
+        SD_Init();
+        update_font(30,90,16,"0:");	//如果字库不存在就更新字库
+        OSTimeDlyHMSM(0,0,2,0,OS_OPT_TIME_PERIODIC,&err);//延时5ms
+    }
+    else
+    {           
+        printf("Font OK");
+    }
 }
 
 /*

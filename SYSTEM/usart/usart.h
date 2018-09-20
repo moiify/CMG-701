@@ -22,7 +22,7 @@
 
 typedef struct
 {
-	uint8_t Buf[100];
+	uint8_t Buf[150];
 	uint8_t Len;
 }ModbusRevBuf_t;
 

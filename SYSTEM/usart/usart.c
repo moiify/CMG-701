@@ -488,10 +488,30 @@ void USART6_IRQHandler(void)
 ****************************************************************************
 */
 void GPRS_Sendcom(u8 * Gprs_com)
-{
-	HAL_UART_Transmit(&GPRS_UART2_Handler,Gprs_com,strlen((char *)Gprs_com),0xffff);
-	while(__HAL_UART_GET_FLAG(&GPRS_UART2_Handler,UART_FLAG_TC)!=SET); 
+{   
+    if(Gprs_com[0]==0x1a)
+    {
+        HAL_UART_Transmit(&GPRS_UART2_Handler,Gprs_com,1,0xffff);
+    }
+	else 
+    {
+        HAL_UART_Transmit(&GPRS_UART2_Handler,Gprs_com,strlen((char *)Gprs_com),0xffff);
+    }
+	while(__HAL_UART_GET_FLAG(&GPRS_UART2_Handler,UART_FLAG_TC)!=SET);  
 }
+void GPRS_SendcomLen(u8 * Gprs_com,u8 Len)
+{   
+    if(Gprs_com[0]==0x1a)
+    {
+        HAL_UART_Transmit(&GPRS_UART2_Handler,Gprs_com,1,0xffff);
+    }
+	else 
+    {
+        HAL_UART_Transmit(&GPRS_UART2_Handler,Gprs_com,Len,0xffff);
+    }
+	while(__HAL_UART_GET_FLAG(&GPRS_UART2_Handler,UART_FLAG_TC)!=SET);  
+}
+
 
 /*
 ****************************************************************************

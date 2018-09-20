@@ -21994,13 +21994,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		f_read(&BMPFile,Bmpbuffer,BMPFile.obj.objsize,(UINT *)&bread); 
 		IMAGE_SetBMP(hItem,Bmpbuffer, BMPFile.obj.objsize);
 		f_close(&BMPFile);			
-  	myfree(SRAMEX,Bmpbuffer);
-    
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Wendu);   //温度
-		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTGREEN));
-		TEXT_SetFont(hItem,GUI_FONT_32_1);
-		TEXT_SetText(hItem,"-.--");
-		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
+        myfree(SRAMEX,Bmpbuffer);
+   
 		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Danyang);   //氮氧化物
 		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTYELLOW));
@@ -22037,12 +22032,19 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetFont(hItem,GUI_FONT_32_1);
 		TEXT_SetText(hItem, PrintTemp);
 		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
+    
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Wendu);   //温度
+		sprintf(PrintTemp,"%.2f",ModbusStrtues.Temp_C);
+		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTGREEN ));
+		TEXT_SetFont(hItem,GUI_FONT_32_1);
+		TEXT_SetText(hItem, PrintTemp);
+		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
 	
 	
-	  hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Guolu);   //锅炉排烟
-	  sprintf(PrintTemp,"%.2f", ModbusStrtues.MachineSmoke_C);
-	  TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTCYAN ));
-    TEXT_SetFont(hItem, GUI_FONT_32_1);
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Guolu);   //锅炉排烟
+        sprintf(PrintTemp,"%.2f", ModbusStrtues.MachineSmoke_C);
+        TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_LIGHTCYAN ));
+        TEXT_SetFont(hItem, GUI_FONT_32_1);
 		TEXT_SetText(hItem, PrintTemp);
 		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
 	
@@ -22060,9 +22062,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetText(hItem,PrintTemp);
 		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
 		
-	  hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Shuiwei);    //水位
-	  sprintf(PrintTemp,"%d",ModbusStrtues.Water_Null);
-    TEXT_SetFont(hItem, GUI_FONT_32_1);
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_Shuiwei);    //水位
+        sprintf(PrintTemp,"%d",ModbusStrtues.Water_Null);
+        TEXT_SetFont(hItem, GUI_FONT_32_1);
 		TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(GUI_ORANGE));
 		TEXT_SetText(hItem, PrintTemp);
 		TEXT_SetTextAlign(hItem,GUI_TA_HCENTER|GUI_TA_VCENTER);
@@ -22074,9 +22076,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetText(hItem, PrintTemp);
 		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_ValueType3);
-			sprintf(GprsTemp,"GPRS:%d",GprsSignalStrength);
+			sprintf(GprsTemp,"Wait:%d",GprsSignalStrength);
 		if(GprsSignalFlag==1)
 			sprintf(GprsTemp,"LinkOK:%d",GprsSignalStrength);
+        else if(GprsSignalFlag==2)
+            sprintf(GprsTemp,"LinkError:%d",GprsSignalStrength);
 //		if((GprsSignalStrength<=5)||GprsSignalStrength==99)
 //			sprintf(GprsTemp,"GPRS无信号:%d",GprsSignalStrength);
 //		else if(GprsSignalStrength>5&&GprsSignalStrength<=14)

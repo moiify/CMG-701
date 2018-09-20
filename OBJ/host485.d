@@ -111,3 +111,4 @@
 ..\obj\host485.o: ..\HARDWARE\NAND\ftl.h
 ..\obj\host485.o: ..\FATFS\exfuns\exfuns.h
 ..\obj\host485.o: ..\SYSTEM\arithmetic\checkout.h
+..\obj\host485.o: ..\HARDWARE\IWDG\iwdg.h

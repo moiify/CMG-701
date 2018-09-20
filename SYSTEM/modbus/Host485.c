@@ -3,6 +3,7 @@
 #include "gprs.h"
 #include "checkout.h"
 #include "usart.h"
+#include "iwdg.h"
 
 #define Enable 0
 #define Disable 1
@@ -20,7 +21,8 @@ void MODBUSDataProcess2(void);
 extern RS_Cache RS485_Cache;
 extern u8 EquipID[5];
 unsigned char Host485Enable_Flag=0;
-unsigned char GuoluSendbuff[8]={0x02,0x03,0x00,0x00,0x00,0x1D,0x85,0xF0};
+//unsigned char GuoluSendbuff[8]={0x02,0x03,0x00,0x00,0x00,0x1D,0x85,0xF0};
+unsigned char GuoluSendbuff[8]={0x02,0x03,0x00,0x00,0x00,0x2D,0x85,0xE4};
 unsigned char AnlogSendbuff[8]={0x01,0x03,0x00,0x03,0x00,0x03,0xF5,0xCB};
 u8 AddrInt;
 u8 *p;
@@ -28,7 +30,6 @@ extern UART_HandleTypeDef husart6;
 extern u8 USART6_RX_BUF[USART6_MAX_RECV_LEN];
 extern u16 USART6_RX_STA;
 Modbus_data ModbusStrtues;
-
 char Host485_Task()
 {
     OS_ERR err;
@@ -40,10 +41,10 @@ char Host485_Task()
       USART6->CR1|=1<<2;
       USART6->CR1|=1<<5;
       p=&RS485_Cache.Buf[RS485_Cache.Out];
-      printf("Out:%d,Len:%d\r\n",RS485_Cache.Out,RS485_Cache.Buf[RS485_Cache.Out].Len);
+//      printf("Out:%d,Len:%d\r\n",RS485_Cache.Out,RS485_Cache.Buf[RS485_Cache.Out].Len);
 	  if(RS485_Cache.Count>0&&RS485_Cache.Buf[RS485_Cache.Out].Len>58)
       {  
-         if(p->Buf[0]==2&&p->Buf[1]==3&&p->Buf[2]==0x3a&&checkCRC((unsigned char *)(p->Buf),63))
+         if(p->Buf[0]==2&&p->Buf[1]==3&&checkCRC((unsigned char *)(p->Buf),p->Len))
          {
               switch(p->Buf[0])
                 {   
@@ -147,8 +148,8 @@ void MODBUSDataProcess1()
 		ModbusStrtues.Water_Null=    RS485_Cache.Buf[RS485_Cache.Out].Buf[(AddrInt-1)*2*9+15]*256+RS485_Cache.Buf[RS485_Cache.Out].Buf[(AddrInt-1)*2*9+16];
 		ModbusStrtues.Machine_Status=    RS485_Cache.Buf[RS485_Cache.Out].Buf[(AddrInt-1)*2*9+18];
 		ModbusStrtues.Burn_Status=    RS485_Cache.Buf[RS485_Cache.Out].Buf[(AddrInt-1)*2*9+20];
-		ModbusStrtues.Temp_C  =-1;
-	  ModbusStrtues.Danyang_ppm  =-1;
+		ModbusStrtues.Temp_C  =(3826.36/(9.3876-ModbusStrtues.Steam_Mpa)-273);
+        ModbusStrtues.Danyang_ppm  =-1;
 		ModbusStrtues.Eryang_ppm  =-1;
 		ModbusStrtues.Rexiao  =-1;
 //	  Resiger=RS485_Cache.Buf[RS485_Cache.Out].Buf[15]*256+RS485_Cache.Buf[RS485_Cache.Out].Buf[16];
@@ -210,7 +211,7 @@ unsigned short ModbusCRC(unsigned char *ptr, unsigned char size)
 
 unsigned char checkCRC(unsigned char *ptr, unsigned char size)
 {
-	signed short tmp = 0;
+	unsigned short tmp = 0;
 	tmp = ModbusCRC(ptr, size - 2);
 	if ((*(ptr + size - 1) == (tmp & 0x00ff)) && (*(ptr + size - 2) == (tmp >> 8)))
 	{

@@ -6,6 +6,7 @@
 #include "usart.h"
 #include "Host485.h"
 #include "24cxx.h"
+#include "iwdg.h"
 	
 RTC_TimeTypeDef RTC_TimeStruct;	//时间句柄
 RTC_DateTypeDef RTC_DateStruct;	//日期句柄
@@ -49,10 +50,15 @@ void GPRS_AT_Init(void)
 /*                检测模块是否工作            */
 AT:		do
 		{
-			printf("En Finish\r\n");
-			memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+			printf("En Finish\r\n");	 
+			memset(GPRS_DATA,0,sizeof(GPRS_DATA));            
 			GPRS_Sendcom((u8 *)"AT\r\n");  
-      OSTimeDlyHMSM(0,0,3,0,OS_OPT_TIME_PERIODIC,&err);			
+            OSTimeDlyHMSM(0,0,3,0,OS_OPT_TIME_PERIODIC,&err);
+            count++;
+            if(count > 25)
+            {
+               SCB->AIRCR =0X05FA0000|(u32)0x04;  //系统软复位 
+            }
 			while(Flag_GPRS_R==0)
 			{
 				count++; 
@@ -166,7 +172,8 @@ CSQ:		do
 
 /*                附着GPRS业务             */
 	do
-		{ 
+		{   
+            IWDG_Feed();
 			printf("AT+CGATT\r\n");
 			GPRS_Sendcom((u8 *)"AT+CGATT=1\r\n"); 
 			OSTimeDlyHMSM(0,0,0,200,OS_OPT_TIME_PERIODIC,&err);
@@ -325,9 +332,10 @@ CSQ:		do
 					goto AT;
 				}
 			}
-			if(strstr((const char *)GPRS_DATA,"OK")!=NULL)
+			if(strstr((const char *)GPRS_DATA,"CONNECT OK")!=NULL)
 			{
 				Flag_GPRS_R=0;
+                count =0;
 				printf("CONNECTSERVER_OK : %s\r\n",GPRS_DATA);
 				OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
 			}
@@ -335,11 +343,13 @@ CSQ:		do
 			{ 
 				printf("CONNECTSERVER : %s\r\n",GPRS_DATA);
 				Flag_GPRS_R=0;
+                count =0;
 				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
 				OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
 			}
 			else
-			{ 
+			{   
+                GprsSignalFlag=2;
 				printf("CONNECTSERVER : %s\r\n",GPRS_DATA);
 				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
 				OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
@@ -364,10 +374,10 @@ void GPRS_Task(void)
 		char sendsbuf[120];	
 		char a[] = "0:Log/1234-56-78.txt";
 		char Date[10];
-		char Clock_Flag[3];
-		char clockcheck[]="{\"ZQYL\":-1,\"GLPY\":-1,\"LNQPY\":-1,\"SW\":-1,\"QT\":-1,\"RSJ\":-1,\"RSYL\":-1,\"RSWD\":-1,\"ZQWD\":-1,\"EQUIP\":\"-1\",\"Clock\":0,\"Type\":0}\r\n";
+//		char Clock_Flag[3];
+		char clockcheck[]="{\"YL\":-1,\"WD\":-1,\"SW\":-1,\"GLPY\":-1,\"LNQPY\":-1,\"GLQD\":-1,\"RSJQD\":-1,\"DYHW\":-1,\"EYHL\":-1,\"KQXS\":-1,\"RXL\":-1,\"EQUIP\":\"-1\",\"Clock\":0,\"Type\":0}\r\n";
 		static u8 His_Date;
-    //OSTaskSemPend(0,OS_OPT_PEND_BLOCKING,0,&err);		 	//请求内建的信号量
+        //OSTaskSemPend(0,OS_OPT_PEND_BLOCKING,0,&err);		 	//请求内建的信号量
 	
 		//GPRS_EN_Init();
 		OSTimeDlyHMSM(0,0,3,0,OS_OPT_TIME_PERIODIC,&err);
@@ -385,18 +395,11 @@ void GPRS_Task(void)
 		printf("Clock1:%s\r\n",Clock);
 		if(strstr((const char *)Clock,"OK")==NULL)
 		{
-		memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-		memset(Clock,0,sizeof(Clock));
-		GPRS_Sendcom((u8 *)"AT+CIPSEND\r\n");
-		OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
-		GPRS_Sendcom((u8 *)clockcheck);
-		GPRS_Sendcom((u8 *)end1);
-		GPRS_Sendcom((u8 *)"\r\n");	
-		OSTimeDlyHMSM(0,0,2,0,OS_OPT_TIME_PERIODIC,&err);
-		sprintf((char*)Clock,"%s",GPRS_DATA);			
+             GprsSignalFlag=2;
+             memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+             GPRS_Task();
 		}
-		GprsSignalFlag=1;
-		printf("Clock2:%s\r\n",Clock);
+        else GprsSignalFlag=1;
 		memset(GPRS_DATA,0,sizeof(GPRS_DATA));
         RTC_DateStruct.Year = ((Clock[18]-48)*10 + (Clock[19]-48));
 		RTC_DateStruct.Month = ((Clock[20]-48)*10 + (Clock[21]-48));
@@ -442,98 +445,114 @@ void GPRS_Task(void)
   
 		if(Flag_CONNECTSERVER==1)       //判断是否连接服务器
 {
-						printf("Send to server...\r\n");
-						memset(GPRS_DATA,0,sizeof(GPRS_DATA));			
+        printf("Send to server...\r\n");
+        memset(GPRS_DATA,0,sizeof(GPRS_DATA));			
 //						sprintf(&sendsbuf[0],"Data:%02d:%02d:%02d",RTC_TimeStruct.Hours,RTC_TimeStruct.Minutes,RTC_TimeStruct.Seconds); 
 //						sprintf(sendsbuf+13,"20%02d-%02d-%02d",RTC_DateStruct.Year,RTC_DateStruct.Month,RTC_DateStruct.Date);						
 //						sprintf(sendsbuf+23,":%send", EquipID);
-						sprintf(sendsbuf,"{\"YL\":%.2f,\"WD\":%f,\"SW\":%d,\"GLPY\":%.2f,\"LNQPY\":%.2f,\"GLQD\":%d,\"RSJQD\":%d,\"DYHW\":%d,\"EYHL\":%d,\"KQXS\":%f,\"RXL\":%f,\"EQUIP\":\"%s\",\"Clock\":1,\"Type\":0}\r\n",
-																																													ModbusStrtues.Steam_Mpa,
-																																													ModbusStrtues.Temp_C,
-																																													ModbusStrtues.Water_Null,
-																																													ModbusStrtues.MachineSmoke_C,
-																																													ModbusStrtues.LengSmoke_C,
-																																													ModbusStrtues.Machine_Status,
-																																												  ModbusStrtues.Burn_Status,
-																																												  ModbusStrtues.Danyang_ppm,                                               
-																																												  ModbusStrtues.Eryang_ppm,
-																																													ModbusStrtues.Oxygen_Null,                                               
-																																												  ModbusStrtues.Rexiao,
-																																													EquipID			);
-						printf("GPRS:%s\r\n",sendsbuf);		
-						GPRS_Sendcom((u8 *)"AT+CIPSEND\r\n");
-						OSTimeDlyHMSM(0,0,1,0,OS_OPT_TIME_PERIODIC,&err);
-						GPRS_Sendcom((u8 *)sendsbuf);
-						GPRS_Sendcom((u8 *)end1);
-						GPRS_Sendcom((u8 *)"\r\n");	
-						OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
-						memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-						printf("Send to server success!\r\n"); 
-						
-					
+        sprintf(sendsbuf,"{\"YL\":%.2f,\"WD\":%f,\"SW\":%d,\"GLPY\":%.2f,\"LNQPY\":%.2f,\"GLQD\":%d,\"RSJQD\":%d,\"DYHW\":%d,\"EYHL\":%d,\"KQXS\":%f,\"RXL\":%f,\"EQUIP\":\"%s\",\"Clock\":1,\"Type\":0}\r\n",
+                                                                                                                                                                    ModbusStrtues.Steam_Mpa,
+                                                                                                                                                                    ModbusStrtues.Temp_C,
+                                                                                                                                                                    ModbusStrtues.Water_Null,
+                                                                                                                                                                    ModbusStrtues.MachineSmoke_C,
+                                                                                                                                                                    ModbusStrtues.LengSmoke_C,
+                                                                                                                                                                    ModbusStrtues.Machine_Status,
+                                                                                                                                                                  ModbusStrtues.Burn_Status,
+                                                                                                                                                                  ModbusStrtues.Danyang_ppm,                                               
+                                                                                                                                                                  ModbusStrtues.Eryang_ppm,
+                                                                                                                                                                    ModbusStrtues.Oxygen_Null,                                               
+                                                                                                                                                                  ModbusStrtues.Rexiao,
+                                                                                                                                                                    EquipID			);
+        printf("GPRS:%s\r\n",sendsbuf);
+        memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+        GPRS_Sendcom((u8 *)"AT+CIPSEND\r\n");
+        OSTimeDlyHMSM(0,0,1,0,OS_OPT_TIME_PERIODIC,&err)
+        ;
+        GPRS_Sendcom((u8 *)sendsbuf);
+        GPRS_Sendcom((u8 *)end1);
+        GPRS_Sendcom((u8 *)"\r\n");	
+        u16 waittime=0;
+        while(strstr((const char *)GPRS_DATA,"OK")==NULL)
+        {   
+            waittime++;                           
+            if(waittime==25)
+            {   
+                printf("发送失败");
+                GprsSignalFlag=2;
+                GPRS_Sendcom((u8 *)end1);
+                GPRS_Sendcom((u8 *)"\r\n");	
+                memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+                GPRS_Task();
+            }
+            OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
+                
+        }						
+        printf("Send to server success!\r\n"); 
+        
+            
 						
 }					
-				for(i=0;i<sizeof(Date);i++)
-				{
-							a[6+i] = Date[i];
-				}   
-				  USART3->CR1&=~(1<<2);
-					USART3->CR1&=~(1<<5);
-				  USART6->CR1&=~(1<<2);
-					USART6->CR1&=~(1<<5);
-					OSTimeDlyHMSM(0,0,0,20,OS_OPT_TIME_PERIODIC,&err);
-				  res = f_open(FilPtr, (const TCHAR*)a, FA_OPEN_ALWAYS | FA_WRITE);
-				  OSTimeDlyHMSM(0,0,0,20,OS_OPT_TIME_PERIODIC,&err);
-					if( res == FR_OK )
-					{
-						
-						f_lseek(FilPtr,f_size(FilPtr));
-						res = f_write(FilPtr, sendsbuf,sizeof(sendsbuf),&bw);
-						OSTimeDlyHMSM(0,0,0,50,OS_OPT_TIME_PERIODIC,&err);
-						bw=0;
-						if(res)
-						{
-							printf("File  Write ERROR! \r\n");
-						}
-						else
-						{   
-							printf("File Write SUCCESS! \r\n");
-							f_close(FilPtr);
-							FilPtr=NULL;
-							USART3->CR1|=1<<2;
-							USART3->CR1|=1<<5;
-							USART6->CR1|=1<<2;
-							USART6->CR1|=1<<5;
-							printf("File close SUCCESS! \r\n");
-							OSTimeDlyHMSM(0,0,0,100,OS_OPT_TIME_PERIODIC,&err);
-						}
-							
-						
-					}
-					else if(res == FR_EXIST)
-					{
-						printf("File is already exist \r\n");
-					}
-					else
-					{
-						printf("Don't know the error! \r\n");
-					}
-                    USART3->CR1|=1<<2;
-                    USART3->CR1|=1<<5;
-                    USART6->CR1|=1<<2;  
-					USART6->CR1|=1<<5;
-					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-                    GPRS_Sendcom((u8 *)"AT+CSQ\r\n");				
-					OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
-					GprsSignalStrength=(GPRS_DATA[8]-48)*10+(GPRS_DATA[9]-48);
-					memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-                    u8 Now_Date;
-                    HAL_RTC_GetDate(&RTC_Handler,&RTC_DateStruct,RTC_FORMAT_BIN);
-                    Now_Date=RTC_DateStruct.Date;
-                    if((Now_Date-His_Date)>=1)
-                    {
-                        SCB->AIRCR =0X05FA0000|(u32)0x04;  //系统软复位
-                    }
-                    OSTimeDlyHMSM(0,1,0,0,OS_OPT_TIME_PERIODIC,&err);
+    for(i=0;i<sizeof(Date);i++)
+    {
+        a[6+i] = Date[i];
+    }   
+      USART3->CR1&=~(1<<2);
+      USART3->CR1&=~(1<<5);
+      USART6->CR1&=~(1<<2);
+      USART6->CR1&=~(1<<5);
+      OSTimeDlyHMSM(0,0,0,20,OS_OPT_TIME_PERIODIC,&err);
+      res = f_open(FilPtr, (const TCHAR*)a, FA_OPEN_ALWAYS | FA_WRITE);
+      OSTimeDlyHMSM(0,0,0,20,OS_OPT_TIME_PERIODIC,&err);
+        if( res == FR_OK )
+        {
+            
+            f_lseek(FilPtr,f_size(FilPtr));
+            res = f_write(FilPtr, sendsbuf,sizeof(sendsbuf),&bw);
+            OSTimeDlyHMSM(0,0,0,50,OS_OPT_TIME_PERIODIC,&err);
+            bw=0;
+            if(res)
+            {
+                printf("File  Write ERROR! \r\n");
+            }
+            else
+            {   
+                printf("File Write SUCCESS! \r\n");
+                f_close(FilPtr);
+                FilPtr=NULL;
+                USART3->CR1|=1<<2;
+                USART3->CR1|=1<<5;
+                USART6->CR1|=1<<2;
+                USART6->CR1|=1<<5;
+                printf("File close SUCCESS! \r\n");
+                OSTimeDlyHMSM(0,0,0,100,OS_OPT_TIME_PERIODIC,&err);
+            }
+                
+            
+        }
+        else if(res == FR_EXIST)
+        {
+            printf("File is already exist \r\n");
+        }
+        else
+        {
+            printf("Don't know the error! \r\n");
+        }
+        USART3->CR1|=1<<2;
+        USART3->CR1|=1<<5;
+        USART6->CR1|=1<<2;  
+        USART6->CR1|=1<<5;
+        memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+        GPRS_Sendcom((u8 *)"AT+CSQ\r\n");				
+        OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
+        GprsSignalStrength=(GPRS_DATA[8]-48)*10+(GPRS_DATA[9]-48);
+        memset(GPRS_DATA,0,sizeof(GPRS_DATA));
+        u8 Now_Date;
+        HAL_RTC_GetDate(&RTC_Handler,&RTC_DateStruct,RTC_FORMAT_BIN);
+        Now_Date=RTC_DateStruct.Date;
+        if(Now_Date!=His_Date)
+        {
+            SCB->AIRCR =0X05FA0000|(u32)0x04;  //系统软复位
+        }
+        OSTimeDlyHMSM(0,1,0,0,OS_OPT_TIME_PERIODIC,&err);
 	}
 }

@@ -2,7 +2,7 @@
 #include "delay.h"
 #include "usart.h"
 #include "led.h"
-#include "key.h"
+#include "iwdg.h"
 #include "lcd.h"
 #include "sdram.h"
 #include "w25qxx.h"
@@ -301,11 +301,6 @@ void press_FR(void)
 				GPRS_Sendcom((u8 *)end1);
 				GPRS_Sendcom((u8 *)"\r\n");	
 				printf("打卡信息上传成功!\r\n");
-				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
-		    GPRS_Sendcom((u8 *)"AT+CSQ\r\n");				
-				OSTimeDlyHMSM(0,0,0,500,OS_OPT_TIME_PERIODIC,&err);
-				GprsSignalStrength=(GPRS_DATA[8]-48)*10+(GPRS_DATA[9]-48);
-				memset(GPRS_DATA,0,sizeof(GPRS_DATA));
 			}
 			else
 			{ 

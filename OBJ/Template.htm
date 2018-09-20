@@ -3,11 +3,11 @@
 <title>Static Call Graph - [..\OBJ\Template.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image ..\OBJ\Template.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Mon Sep 10 09:39:34 2018
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Wed Sep 19 11:23:06 2018
 <BR><P>
-<H3>Maximum Stack Usage =       1176 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
+<H3>Maximum Stack Usage =       1200 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
-IWATCH_Task &rArr; GPRS_Task &rArr; f_open &rArr; dir_register &rArr; dir_find &rArr; dir_read &rArr; load_xdir &rArr; dir_next &rArr; create_chain &rArr; find_bitmap &rArr; move_window &rArr; sync_window &rArr; disk_write &rArr; FTL_WriteSectors &rArr; FTL_CopyAndWriteToBlock &rArr; FTL_FindSamePlaneUnusedBlock &rArr; FTL_FindUnusedBlock &rArr; NAND_ReadSpare &rArr; NAND_ReadPage &rArr; NAND_ECC_Correction &rArr; __2printf
+IWATCH_Task &rArr; GPRS_Task &rArr;  GPRS_Task (Cycle)
 <P>
 <H3>
 Functions with no stack information
@@ -49,6 +49,7 @@ Mutually Recursive functions
  <LI><a href="#[58c]">_GetDialogItem</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[58c]">_GetDialogItem</a><BR>
  <LI><a href="#[582]">_GetDialogItem</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[582]">_GetDialogItem</a><BR>
  <LI><a href="#[1d]">HardFault_Handler</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[1d]">HardFault_Handler</a><BR>
+ <LI><a href="#[295]">GPRS_Task</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[295]">GPRS_Task</a><BR>
  <LI><a href="#[20]">UsageFault_Handler</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[20]">UsageFault_Handler</a><BR>
  <LI><a href="#[62c]">_Screen2hWin</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[62c]">_Screen2hWin</a><BR>
  <LI><a href="#[5c2]">_PaintTransChildren</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[5c2]">_PaintTransChildren</a><BR>
@@ -963,7 +964,6 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[1ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 </UL>
 <BR>[Called By]<UL><LI><a href="#[268]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FTL_Init
-<LI><a href="#[278]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;press_FR
 <LI><a href="#[2c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GUI_GetDataFromMemory
 </UL>
 
@@ -2378,11 +2378,12 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[5ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WM_SetDefault
 </UL>
 
-<P><STRONG><a name="[28e]"></a>GPRS_AT_Init</STRONG> (Thumb, 832 bytes, Stack size 48 bytes, gprs.o(i.GPRS_AT_Init))
+<P><STRONG><a name="[28e]"></a>GPRS_AT_Init</STRONG> (Thumb, 868 bytes, Stack size 48 bytes, gprs.o(i.GPRS_AT_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 160 + Unknown Stack Size
 <LI>Call Chain = GPRS_AT_Init &rArr; AT24CXX_Read &rArr; AT24CXX_ReadOneByte &rArr; IIC_Read_Byte &rArr; IIC_NAck &rArr; delay_us &rArr; OSSchedUnlock &rArr; OSSched &rArr; OS_PrioGetHighest
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OSTimeDlyHMSM
+<LI><a href="#[274]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IWDG_Feed
 <LI><a href="#[1c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AT24CXX_Read
 <LI><a href="#[290]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPRS_Sendcom
 <LI><a href="#[293]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OSIntExit
@@ -2394,8 +2395,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[295]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPRS_Task
 </UL>
 
-<P><STRONG><a name="[290]"></a>GPRS_Sendcom</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, usart.o(i.GPRS_Sendcom))
-<BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = GPRS_Sendcom &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[290]"></a>GPRS_Sendcom</STRONG> (Thumb, 52 bytes, Stack size 16 bytes, usart.o(i.GPRS_Sendcom))
+<BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = GPRS_Sendcom &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[294]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
 <LI><a href="#[1f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
@@ -2405,11 +2406,13 @@ Global Symbols
 <LI><a href="#[278]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;press_FR
 </UL>
 
-<P><STRONG><a name="[295]"></a>GPRS_Task</STRONG> (Thumb, 1448 bytes, Stack size 352 bytes, gprs.o(i.GPRS_Task))
-<BR><BR>[Stack]<UL><LI>Max Depth = 1160 + Unknown Stack Size
-<LI>Call Chain = GPRS_Task &rArr; f_open &rArr; dir_register &rArr; dir_find &rArr; dir_read &rArr; load_xdir &rArr; dir_next &rArr; create_chain &rArr; find_bitmap &rArr; move_window &rArr; sync_window &rArr; disk_write &rArr; FTL_WriteSectors &rArr; FTL_CopyAndWriteToBlock &rArr; FTL_FindSamePlaneUnusedBlock &rArr; FTL_FindUnusedBlock &rArr; NAND_ReadSpare &rArr; NAND_ReadPage &rArr; NAND_ECC_Correction &rArr; __2printf
+<P><STRONG><a name="[295]"></a>GPRS_Task</STRONG> (Thumb, 1436 bytes, Stack size 376 bytes, gprs.o(i.GPRS_Task))
+<BR><BR>[Stack]<UL><LI>Max Depth = 1184 + Unknown Stack Size
+ + In Cycle
+<LI>Call Chain = GPRS_Task &rArr;  GPRS_Task (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OSTimeDlyHMSM
+<LI><a href="#[295]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPRS_Task
 <LI><a href="#[1c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;AT24CXX_Read
 <LI><a href="#[297]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RTC_SetTime
 <LI><a href="#[299]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RTC_GetDate
@@ -2426,7 +2429,8 @@ Global Symbols
 <LI><a href="#[1d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[1cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IWATCH_Task
+<BR>[Called By]<UL><LI><a href="#[295]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPRS_Task
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IWATCH_Task
 </UL>
 
 <P><STRONG><a name="[29d]"></a>GPRS_UART2_init</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, usart.o(i.GPRS_UART2_init))
@@ -7261,7 +7265,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f767xx.o(RESET)
 </UL>
-<P><STRONG><a name="[440]"></a>Host485_Task</STRONG> (Thumb, 314 bytes, Stack size 16 bytes, host485.o(i.Host485_Task))
+<P><STRONG><a name="[440]"></a>Host485_Task</STRONG> (Thumb, 280 bytes, Stack size 16 bytes, host485.o(i.Host485_Task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84 + Unknown Stack Size
 <LI>Call Chain = Host485_Task &rArr; OSTimeDlyHMSM &rArr; OS_TickListInsertDly &rArr; OS_TickListInsert
 </UL>
@@ -7274,7 +7278,6 @@ Global Symbols
 <LI><a href="#[441]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;checkCRC
 <LI><a href="#[443]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MODBUSDataProcess2
 <LI><a href="#[442]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MODBUSDataProcess1
-<LI><a href="#[1cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ModBus_Task
 </UL>
@@ -7459,8 +7462,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[107]"></a>IWATCH_Task</STRONG> (Thumb, 28 bytes, Stack size 16 bytes, task.o(i.IWATCH_Task))
-<BR><BR>[Stack]<UL><LI>Max Depth = 1176 + Unknown Stack Size
-<LI>Call Chain = IWATCH_Task &rArr; GPRS_Task &rArr; f_open &rArr; dir_register &rArr; dir_find &rArr; dir_read &rArr; load_xdir &rArr; dir_next &rArr; create_chain &rArr; find_bitmap &rArr; move_window &rArr; sync_window &rArr; disk_write &rArr; FTL_WriteSectors &rArr; FTL_CopyAndWriteToBlock &rArr; FTL_FindSamePlaneUnusedBlock &rArr; FTL_FindUnusedBlock &rArr; NAND_ReadSpare &rArr; NAND_ReadPage &rArr; NAND_ECC_Correction &rArr; __2printf
+<BR><BR>[Stack]<UL><LI>Max Depth = 1200 + Unknown Stack Size
+<LI>Call Chain = IWATCH_Task &rArr; GPRS_Task &rArr;  GPRS_Task (Cycle)
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OSTimeDlyHMSM
 <LI><a href="#[295]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPRS_Task
@@ -7473,6 +7476,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[440]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Host485_Task
 <LI><a href="#[271]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FingerPrint_Task
 <LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Systemcheckstack_task
+<LI><a href="#[28e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPRS_AT_Init
 <LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_cbDialogSetting
 <LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_cbDialogNumPad
 <LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_cbDialogHistory
@@ -8354,7 +8358,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[534]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Sys_Init
 </UL>
 
-<P><STRONG><a name="[442]"></a>MODBUSDataProcess1</STRONG> (Thumb, 202 bytes, Stack size 16 bytes, host485.o(i.MODBUSDataProcess1))
+<P><STRONG><a name="[442]"></a>MODBUSDataProcess1</STRONG> (Thumb, 238 bytes, Stack size 16 bytes, host485.o(i.MODBUSDataProcess1))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = MODBUSDataProcess1 &rArr; str2int
 </UL>
 <BR>[Calls]<UL><LI><a href="#[49a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;str2int
@@ -12657,7 +12661,6 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = __2printf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[538]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TFTLCD_Init
-<LI><a href="#[440]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Host485_Task
 <LI><a href="#[295]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPRS_Task
 <LI><a href="#[271]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FingerPrint_Task
 <LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;start_task
@@ -12745,7 +12748,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[548]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp_sqrt
 </UL>
 
-<P><STRONG><a name="[441]"></a>checkCRC</STRONG> (Thumb, 48 bytes, Stack size 12 bytes, host485.o(i.checkCRC))
+<P><STRONG><a name="[441]"></a>checkCRC</STRONG> (Thumb, 46 bytes, Stack size 12 bytes, host485.o(i.checkCRC))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = checkCRC &rArr; ModbusCRC
 </UL>
 <BR>[Calls]<UL><LI><a href="#[63d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ModbusCRC
@@ -13182,7 +13185,7 @@ Global Symbols
 <LI><a href="#[271]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FingerPrint_Task
 </UL>
 
-<P><STRONG><a name="[278]"></a>press_FR</STRONG> (Thumb, 440 bytes, Stack size 160 bytes, finger.o(i.press_FR))
+<P><STRONG><a name="[278]"></a>press_FR</STRONG> (Thumb, 376 bytes, Stack size 160 bytes, finger.o(i.press_FR))
 <BR><BR>[Stack]<UL><LI>Max Depth = 300 + Unknown Stack Size
 <LI>Call Chain = press_FR &rArr; PS_HighSpeedSearch &rArr; JudgeStr &rArr; delay_ms &rArr; delay_ostimedly &rArr; OSTimeDly &rArr; OS_TickListInsertDly &rArr; OS_TickListInsert
 </UL>
@@ -13195,7 +13198,6 @@ Global Symbols
 <LI><a href="#[1d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PS_GenChar
 <LI><a href="#[1d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ShowErrMessage
 <LI><a href="#[290]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPRS_Sendcom
-<LI><a href="#[1ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 <LI><a href="#[1d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[1cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
@@ -14337,8 +14339,8 @@ Local Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> windowdlg.o(i.CreateWindow)
 </UL>
-<P><STRONG><a name="[97]"></a>_cbDialog</STRONG> (Thumb, 1434 bytes, Stack size 152 bytes, windowdlg.o(i._cbDialog))
-<BR><BR>[Stack]<UL><LI>Max Depth = 960 + Unknown Stack Size
+<P><STRONG><a name="[97]"></a>_cbDialog</STRONG> (Thumb, 1478 bytes, Stack size 136 bytes, windowdlg.o(i._cbDialog))
+<BR><BR>[Stack]<UL><LI>Max Depth = 944 + Unknown Stack Size
 <LI>Call Chain = _cbDialog &rArr; f_open &rArr; dir_register &rArr; dir_find &rArr; dir_read &rArr; load_xdir &rArr; dir_next &rArr; create_chain &rArr; find_bitmap &rArr; move_window &rArr; sync_window &rArr; disk_write &rArr; FTL_WriteSectors &rArr; FTL_CopyAndWriteToBlock &rArr; FTL_FindSamePlaneUnusedBlock &rArr; FTL_FindUnusedBlock &rArr; NAND_ReadSpare &rArr; NAND_ReadPage &rArr; NAND_ECC_Correction &rArr; __2printf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[274]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IWDG_Feed
